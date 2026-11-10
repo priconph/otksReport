@@ -1,0 +1,30 @@
+SELECT tkdataraw.empno, 
+
+tbl_EmployeeInfo.SalaryType, tkdataraw.date, tkdataraw.time_in, tkdataraw.mode_in,
+tkdataraw.date_out, tkdataraw.time_out, tkdataraw.mode_out,tkdataraw.reg_hours, 
+
+tkdataraw.late_mins, tkdataraw.ot_credit, tkdataraw.absent,tkdataraw.under_mins, 
+
+tkdataraw.leavecode, tkdataraw.leavenum, tkdataraw.ot1, tkdataraw.ot2, tkdataraw.ot2a, 
+
+tkdataraw.ot3, tkdataraw.ot3a, tkdataraw.ot4, tkdataraw.ot4a, tkdataraw.ot5, tkdataraw.ot5a, 
+
+tkdataraw.ot6, tkdataraw.ot6a,tkdataraw.nightdiff, tkdataraw.aut, tkdataraw.pkid, IF( 
+
+tkday_off.dayoff_type IS NULL, '0', '1') AS dayoff,
+DAYNAME( tkdataraw.date ) AS dayname_in, DAYNAME( tkdataraw.date_out ) as 
+
+dayname_out, IF(tkdataraw.date = '' OR tkdataraw.date_out = '' OR tkdataraw.time_in = '' OR 
+
+tkdataraw.time_out = '', '1','0' ) as inconsistent
+FROM db_otks.tkdataraw 
+INNER JOIN db_hris.tbl_EmployeeInfo ON tbl_EmployeeInfo.EmpNo = 
+
+tkdataraw.empno 
+LEFT JOIN tkday_off ON tkday_off.empno = tkdataraw.empno
+WHERE tkdataraw.status=1
+
+
+TIMEDIFF(CONCAT(`date`, ' ' ,`time_in`),CONCAT(`date_out`, ' ' ,`time_out`)) as time_diff
+
+select max(pkid) from ptistb

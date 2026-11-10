@@ -1,0 +1,68 @@
+# Documents / spreadsheets
+*.xls
+*.xlsx
+*.xlsm
+*.xlsb
+*.csv
+*.pdf
+*.doc
+*.docx
+*.ppt
+*.pptx
+
+# Database files
+*.dbf
+*.DBF
+*.mdb
+*.accdb
+*.sql
+*.sqlite
+*.db
+*.bak
+
+# Archives
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+
+# Images / media (large, non-code)
+*.jpg
+*.jpeg
+*.bmp
+*.tif
+*.tiff
+*.psd
+*.mp3
+*.mp4
+*.avi
+*.mov
+
+# Source maps
+*.map
+
+# Logs / temp
+*.log
+*.tmp
+*.temp
+*~
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Backup / scratch folders
+bakup/
+New folder/
+test/
+test SL VL Textfile upload/
+
+# Credentials / local config (review before enabling)
+# db_config/
+# smtp_config.php
+
+# Dependencies / IDE
+vendor/
+node_modules/
+.idea/
+.vscode/

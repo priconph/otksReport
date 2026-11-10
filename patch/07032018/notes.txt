@@ -1,0 +1,3 @@
+Correction on concern on Offset
+> all data wag updated (logdel = 1) when removing offset data
+> pkid was not set a primary key and auto increment

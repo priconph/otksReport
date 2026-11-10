@@ -1,0 +1,4 @@
+SELECT IF(tkdataraw.date = '' OR tkdataraw.date_out = '' OR tkdataraw.time_in = '' OR tkdataraw.time_out = '', '1','0' ) as inconsistent,tkdataraw.empno, tbl_EmployeeInfo.SalaryType, tkdataraw.date, tkdataraw.time_in, tkdataraw.mode_in,
+			tkdataraw.date_out, tkdataraw.time_out, tkdataraw.mode_out,tkdataraw.reg_hours, tkdataraw.late_mins, tkdataraw.ot_credit, tkdataraw.absent,tkdataraw.under_mins, tkdataraw.leavecode, tkdataraw.leavenum, 
+			tkdataraw.ot1, tkdataraw.ot2, tkdataraw.ot2a, tkdataraw.ot3, tkdataraw.ot3a, tkdataraw.ot4, tkdataraw.ot4a, tkdataraw.ot5, tkdataraw.ot5a, tkdataraw.ot6, tkdataraw.ot6a,
+			tkdataraw.nightdiff, tkdataraw.aut, tkdataraw.pkid FROM db_otks.tkdataraw INNER JOIN db_hris.tbl_EmployeeInfo ON tbl_EmployeeInfo.EmpNo = tkdataraw.empno WHERE tkdataraw.status=1

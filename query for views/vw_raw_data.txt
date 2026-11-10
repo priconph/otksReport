@@ -1,0 +1,6 @@
+SELECT SQL_CALC_FOUND_ROWS tkdataraw.pkid, tbl_EmployeeInfo.FirstName, tbl_EmployeeInfo.LastName, tbl_Position.Position, tbl_Department.Department, tbl_Section.Section, tkdataraw.empno, tkdataraw.date, tkdataraw.time_in, tkdataraw.mode_in, tkdataraw.date_out, tkdataraw.time_out, tkdataraw.mode_out, IF( date = '' OR date_out = '' OR time_in = '' OR time_out = '' , 1, 0) AS inconsistent FROM db_otks.tkdataraw 
+INNER JOIN db_hris.tbl_EmployeeInfo ON db_hris.tbl_EmployeeInfo.empno = tkdataraw.empno
+INNER JOIN db_hris.tbl_Department ON db_hris.tbl_Department.pkid = tbl_EmployeeInfo.fkDepartment 
+INNER JOIN db_hris.tbl_Section ON db_hris.tbl_Section.pkid = tbl_EmployeeInfo.fkSection 
+INNER JOIN db_hris.tbl_Position ON tbl_Position.pkid = tbl_EmployeeInfo.fkPosition 
+WHERE tkdataraw.status=1 

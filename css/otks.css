@@ -1,0 +1,36 @@
+/* OTKS Report All Style */
+body{
+	background-image	:url(../images/bg.jpg);
+	background-repeat	:no-repeat;
+	background-size		:cover;
+}
+
+div.top-container {
+	width				: 98%;
+	margin				: auto;
+	margin-bottom		: 1%;
+}
+
+div.mid-container {
+	width				: 98%;
+	margin				: auto;
+	padding				: 10px;
+}
+
+p.align-c{
+	text-align			: center;
+}
+
+p.align-r{
+	text-align			: right;
+}
+
+div#overlay{
+	  position			: absolute;
+	  width				: 100%;
+	  height			: 100%;
+	  top				: 0;
+	  left				: 0;   
+	  z-index			: 100;
+	  display			: none;
+}

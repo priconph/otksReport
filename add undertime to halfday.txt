@@ -1,0 +1,1 @@
+SELECT * FROM `tkdataraw` WHERE `time_in` > '11:00:00' AND `time_in` < '16:30' AND (`date` BETWEEN '2016-07-30' AND '2016-08-14') AND `mode_in` = 'IN'
