@@ -1,15 +1,15 @@
 <?php
 	require_once("includes.php"); 
 	require_once("otksr-oop.php");
-	session_start();
-	$username = $_SESSION['username'];
+	if(session_status() === PHP_SESSION_NONE){ session_start(); }
+	$username = $_SESSION['username'] ?? '';
 	$dateToday = date('Y-m-d');
-	echo '<input type="hidden" id="hd_uname" value="'.$username.'">';
+	echo '<input type="hidden" id="hd_uname" value="'.htmlspecialchars($username, ENT_QUOTES, 'UTF-8').'">';
 	require_once('check_login.php');
 	
 	if(isset($_GET)){
-		$date_start = $_GET['txtStartDate'];
-		$date_end = $_GET['txtEndDate'];
+		$date_start = $_GET['txtStartDate'] ?? '';
+		$date_end = $_GET['txtEndDate'] ?? '';
 	}
 
 	if($date_start=="" || $date_start==""){
@@ -53,7 +53,7 @@
 			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 			  <ul class="nav navbar-nav menu">
 				<li class="active"><a href="index.php" id="loadRawData" class="fa fa-tasks fa-lg"> RAW DATA</a></li>
-				<li class=""><a href="dailyTFM.php?txtStartDate=<?php echo $date_start; ?>&txtEndDate=<?php echo $date_end; ?>&month=<?php echo $month; ?>" class="fa fa-tasks fa-lg" id="loadDailyTFM"> TFM</a></li>
+				<li class=""><a href="dailyTFM.php?txtStartDate=<?php echo htmlspecialchars($date_start, ENT_QUOTES, 'UTF-8'); ?>&txtEndDate=<?php echo htmlspecialchars($date_end, ENT_QUOTES, 'UTF-8'); ?>&month=<?php echo htmlspecialchars($month, ENT_QUOTES, 'UTF-8'); ?>" class="fa fa-tasks fa-lg" id="loadDailyTFM"> TFM</a></li>
 				<li class=""><a href="uploadSLVL.php" id="loadUploadSLVL" class="fa fa-upload fa-lg"> SL/VL</a></li>
 				<li class=""><a href="eom.php" id="loadEom" class="fa fa-tasks fa-lg"> EOM</a></li>
 				<li class=""><a href="individualTimeCard.php" id="loadIndividualTimecard" class="fa fa-user fa-lg"> Timecard</a></li>
@@ -72,17 +72,17 @@
 			  <div class="form-group">
 				<label class="sr-only" for="txtStartDate">Start Date</label>
 				<?php 
-					echo '<input type="date" class="form-control" id="txtStartDate" name="txtStartDate" placeholder="Start Date" value="'.$date_start.'">';
+					echo '<input type="date" class="form-control" id="txtStartDate" name="txtStartDate" placeholder="Start Date" value="'.htmlspecialchars($date_start, ENT_QUOTES, 'UTF-8').'">';
 				?>
 			  </div>
 			  <div class="form-group">
 				<label class="sr-only" for="txtEndDate">End Date</label>
 				<?php 
-					echo '<input type="date" class="form-control" id="txtEndDate" name = "txtEndDate" placeholder="End Date" value="'.$date_end.'">';
+					echo '<input type="date" class="form-control" id="txtEndDate" name = "txtEndDate" placeholder="End Date" value="'.htmlspecialchars($date_end, ENT_QUOTES, 'UTF-8').'">';
 				?>
 			  </div>
 			  <button type="submit" class="btn btn-primary" id="set_date_1"><span class="fa fa-calendar"></span> SET DATE</button><br><br>
-			  <input type="month" pattern="[0-9]*" class="form-control" id="txt_month_range" value="<?php echo $month; ?>" >
+			  <input type="month" pattern="[0-9]*" class="form-control" id="txt_month_range" value="<?php echo htmlspecialchars($month, ENT_QUOTES, 'UTF-8'); ?>" >
 			  <button type="submit" class="btn btn-primary" id="set_first_cutoff"><span class="fa fa-calendar-check-o"></span> 1ST CUT OFF</button>
 			  <button type="submit" class="btn btn-primary" id="set_second_cutoff"><span class="fa fa-calendar-check-o"></span> 2ND CUT OFF</button>
 			</form>
@@ -100,7 +100,7 @@
 				}
 				?>
 				<label class="">Employee Number</label>
-				<input type="text" class="form-control" id="txt_employee_number_search" value="<?php echo $empno_search; ?>">
+				<input type="text" class="form-control" id="txt_employee_number_search" value="<?php echo htmlspecialchars($empno_search, ENT_QUOTES, 'UTF-8'); ?>">
 				<button class="btn btn-primary" id="btn_employee_search">
 					<span class="fa fa-search"></span> Search
 				</button>
@@ -911,9 +911,9 @@ $('#frm_date_range').submit(function(e){
 
 /* search specific employee */
 $('#btn_employee_search').click(function(){
-	var start_date 	= "<?php echo $date_start; ?>";
-	var end_date 	= "<?php echo $date_end; ?>";
-	var month 		= "<?php echo $month; ?>";
+	var start_date 	= <?php echo json_encode((string)$date_start); ?>;
+	var end_date 	= <?php echo json_encode((string)$date_end); ?>;
+	var month 		= <?php echo json_encode((string)$month); ?>;
 	if(start_date != '' && end_date != ''){
 		var search_1 	=  "txtStartDate="+start_date+"&txtEndDate="+end_date;
 	}else{
@@ -935,9 +935,9 @@ $('#btn_employee_search').click(function(){
 });
 
 $('#txt_employee_number_search').change(function(){
-	var start_date 	= "<?php echo $date_start; ?>";
-	var end_date 	= "<?php echo $date_end; ?>";
-	var month 		= "<?php echo $month; ?>";
+	var start_date 	= <?php echo json_encode((string)$date_start); ?>;
+	var end_date 	= <?php echo json_encode((string)$date_end); ?>;
+	var month 		= <?php echo json_encode((string)$month); ?>;
 	if(start_date != '' && end_date != ''){
 		var search_1 	=  "txtStartDate="+start_date+"&txtEndDate="+end_date;
 	}else{

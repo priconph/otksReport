@@ -1,5 +1,5 @@
 <?php
-$conn = mysql_connect('localhost','root','newd3v') or die("cant connect server");
+$conn = mysql_connect('localhost','root','sys!w@nDb123') or die("cant connect server");
 mysql_select_db('db_otks') or die("cant connect db");
 
 $query = "SELECT `pkid`,`empno` FROM `tkdataraw` WHERE `time_in` > '11:00:00' AND `time_in` < '16:30' AND (`date` BETWEEN '2016-07-30' AND '2016-08-14') AND `mode_in` = 'IN';";

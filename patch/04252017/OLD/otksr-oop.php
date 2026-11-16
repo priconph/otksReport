@@ -6,13 +6,13 @@ class OTKSR extends mysqli
 		/* db connection config variables */
 
 		// public $user = "root";
-		// public $pass = "newd3v";
+		// public $pass = "sys!w@nDb123";
 		// public $dbName = "db_otks";
 		// public $dbHost = "localhost";
 		
 		// require_once('./db_config/connection.php');
 		public $user = "root";
-		public $pass = "newd3v";
+		public $pass = "sys!w@nDb123";
 		public $dbName = "db_otks";
 		public $dbHost = "localhost";
 		

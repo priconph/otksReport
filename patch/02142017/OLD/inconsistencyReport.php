@@ -9,7 +9,7 @@ class Products {
 			$date = $_SESSION['date'];
 			$date_out = $_SESSION['date_out'];
 					
-			$db = new PDO('mysql:host=localhost;dbname=db_ords;charset=UTF-8', 'root', 'newd3v');
+			$db = new PDO('mysql:host=localhost;dbname=db_ords;charset=UTF-8', 'root', 'sys!w@nDb123');
             
 			$query = $db->prepare("SELECT * FROM tbl_products WHERE product like '%$product%' 
 			and date BETWEEN '$date' AND '$date_out' ORDER BY date");

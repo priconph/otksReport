@@ -1,5 +1,5 @@
 <?php
-$conn = mysql_connect('localhost','root','newd3v') or die("cant connect server");
+$conn = mysql_connect('localhost','root','sys!w@nDb123') or die("cant connect server");
 mysql_select_db('db_otks') or die("cant connect db");
 
 $query = 'SELECT * FROM vw_daily_employees;';

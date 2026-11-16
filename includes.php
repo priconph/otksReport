@@ -5,10 +5,10 @@
 		$valid_ip = OTKSR::getInstance()->get_valid_ip($user_ip);
 		if(!$valid_ip){
 			echo "WARNING YOU ARE NOT ALLOWED TO VIEW THIS PAGE!";
-			header("Location: email.php?ip_address=".$user_ip); /* Redirect browser */
+			header("Location: email.php?ip_address=".urlencode($user_ip)); /* Redirect browser */
 			exit;
 		}
-		session_start();
+		if(session_status() === PHP_SESSION_NONE){ session_start(); }
 		if(!isset($_SESSION['username'])){
 			
 			// echo "WARNING YOU ARE NOT ALLOWED TO VIEW THIS PAGE!";

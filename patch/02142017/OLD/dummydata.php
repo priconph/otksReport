@@ -1,7 +1,7 @@
 <?php
 $server = "localhost";
 $user = "root";
-$pass = "newd3v";
+$pass = "sys!w@nDb123";
 $database = "db_otks";
 $con = "";
 $con = mysql_connect($server,$user,$pass) or die ("error connecting to sever!");

@@ -66,3 +66,9 @@ vendor/
 node_modules/
 .idea/
 .vscode/
+
+/report*.json
+/refactor-tasks.md
+/php84-migrate-folder.prompt.md
+*-answer.md
+*-tasks.md

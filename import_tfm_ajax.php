@@ -3,7 +3,7 @@
 $array_tfm = $_POST['array_tbl_tfm'];
 $return = array();
 
-$conn = mysql_connect('localhost','root','newd3v') or die( mysql_error() );
+$conn = mysql_connect('localhost','root','sys!w@nDb123') or die( mysql_error() );
 mysql_select_db('db_otks_mj',$conn) or die( mysql_error() );
 
 $date_today = date('Y-m-d H:i:s');

@@ -6,13 +6,13 @@ class OTKSR extends mysqli
 		/* db connection config variables */
 
 		// public $user = "root";
-		// public $pass = "newd3v";
+		// public $pass = "sys!w@nDb123";
 		// public $dbName = "db_otks";
 		// public $dbHost = "localhost";
 		
 		// require_once('./db_config/connection.php');
 		public $user = "root";
-		public $pass = "newd3v";
+		public $pass = "sys!w@nDb123";
 		public $dbName = "db_otks";
 		public $dbHost = "localhost";
 		
@@ -26,19 +26,22 @@ class OTKSR extends mysqli
 
 		public function __clone()
 		{
-			trigger_error('Clone is not allowed.',E_USER_ERROR);
+			throw new LogicException('Clone is not allowed.');
 		}
 		
 		public function __wakeup()
 		{
-			trigger_error('Deserializing is not allowed.',E_USER_ERROR);
+			throw new LogicException('Deserializing is not allowed.');
 		}
 		
 		private function __construct() {
-			parent::__construct($this->dbHost, $this->user, $this->pass, $this->dbName);
+			/* PHP 8.1+ throws mysqli_sql_exception by default; keep the PHP 5.3 behaviour callers expect */
+				mysqli_report(MYSQLI_REPORT_OFF);
+				parent::__construct($this->dbHost, $this->user, $this->pass, $this->dbName);
 			if(mysqli_connect_error())
 			{
-				exit('Connect Error (' . mysqli_connect_errno() . ') ' . mysqli_connect_error());
+				error_log('OTKSR connect error (' . mysqli_connect_errno() . '): ' . mysqli_connect_error());
+					exit('Database connection error.');
 			}
 			parent::set_charset('utf-8');
 		}
@@ -962,7 +965,7 @@ class OTKSR extends mysqli
 				}
 			}
 			
-			if( (count($row) == 0) ){
+			if( empty($row) ){
 				if(date('D',strtotime($date_in)) == 'Sun'){
 					return '-';
 				}
@@ -1977,7 +1980,7 @@ class OTKSR extends mysqli
 			
 			$dayoff_type = 0;
 			$row_day_off = mysqli_fetch_array($result);
-			if( count($row_day_off) != 0 ){
+			if( !empty($row_day_off) ){
 				/* set dayoff to 1 if employee exist in tkday_off */
 				$dayoff_type = 1;
 			}
@@ -3749,12 +3752,17 @@ class OTKSR extends mysqli
 		
 		/* administrative */
 		public function get_valid_ip($ip_address){
-			$query = "SELECT `ip_address` FROM `tbl_valid_ip` WHERE `ip_address` = '$ip_address';";
-			$result = $this->query($query);
-			if($result->num_rows != 0){
-				return true;
+			$stmt = $this->prepare('SELECT `ip_address` FROM `tbl_valid_ip` WHERE `ip_address` = ?');
+			if($stmt === false){
+				error_log('get_valid_ip prepare failed: ' . $this->error);
+				return false;
 			}
-			return false;
+			$stmt->bind_param('s', $ip_address);
+			$stmt->execute();
+			$stmt->store_result();
+			$found = $stmt->num_rows != 0;
+			$stmt->close();
+			return $found;
 		}
 
 		public function get_empname($empno){

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(php -v:*)",
+      "Bash(php --version:*)",
+      "Bash(which php:*)",
+      "Bash(php -m:*)",
+      "Bash(php -l:*)",
+      "Bash(git:*)",
+      "Bash(*phpcs*)"
+    ]
+  }
+}

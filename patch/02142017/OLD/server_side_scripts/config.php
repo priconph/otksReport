@@ -1,5 +1,5 @@
 <?php
 $username = 'root';
-$password = 'newd3v';
+$password = 'sys!w@nDb123';
 $db_name  = 'db_otks';
 $server   = 'localhost';

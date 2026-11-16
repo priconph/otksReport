@@ -31,7 +31,7 @@
 	
 	/* Database connection information */
 	$gaSql['user']       = "root";
-	$gaSql['password']   = "newd3v";
+	$gaSql['password']   = "sys!w@nDb123";
 	$gaSql['db']         = "db_otks";
 	$gaSql['server']     = "localhost";
 	
