@@ -5,13 +5,14 @@
 
 	<!--SCRIPT and CSS-->
 	<?php
-	require_once("includes.php");
-	session_start();
+	require_once(__DIR__ . '/includes.php');
+	if(session_status() === PHP_SESSION_NONE){ session_start(); }
+	$username = '';
 	if (array_key_exists("username", $_SESSION)) 
 	{
 		$username = $_SESSION['username'];
 	}
-	require_once('check_login.php');
+	require_once(__DIR__ . '/check_login.php');
 	?>
 	
 	<style> 
@@ -108,9 +109,9 @@ $(document).ready(function(){
 		<div class="panel panel-body">
 				<?php
 				if(isset($_GET['txtStartDate'])){
-					require_once('otksr-oop.php');
+					require_once(__DIR__ . '/otksr-oop.php');
 					$dateFrom = $_GET['txtStartDate'];
-					$dateTo = $_GET['txtEndDate'];
+					$dateTo = $_GET['txtEndDate'] ?? '';
 					
 					$timecard_body = '';
 					$long_timecard = '';
@@ -128,15 +129,16 @@ $(document).ready(function(){
 					
 					//get user name
 					$selectUserInfo = OTKSR::getInstance()->getUserInfo($username);
-					while($rowUInfo = mysqli_fetch_array($selectUserInfo)) {
+					$loggedName = '';
+					while($selectUserInfo instanceof mysqli_result && ($rowUInfo = mysqli_fetch_array($selectUserInfo))) {
 						$loggedName = $rowUInfo['LN'].", ". $rowUInfo['FN'];
 					}
 					
 					$selectEmpInfo = OTKSR::getInstance()->getIndividualTimeCardEmpNo($dateFrom, $dateTo);
 					// $selectEmpInfo = OTKSR::getInstance()->getIndividualTimeCardEmpNoe($dateFrom, $dateTo);
 					$ctr = 0;
-					$result_ctr = (int)$selectEmpInfo->num_rows-1;
-					while($rowInfo = mysqli_fetch_array($selectEmpInfo)) {
+					$result_ctr = ($selectEmpInfo instanceof mysqli_result) ? (int)$selectEmpInfo->num_rows-1 : -1;
+					while($selectEmpInfo instanceof mysqli_result && ($rowInfo = mysqli_fetch_array($selectEmpInfo))) {
 						// if($ctr==0){
 							// $timecard_body .= '<div class="container" style="">';
 						// }									
@@ -152,15 +154,15 @@ $(document).ready(function(){
 												<th style="text-align:center" colspan="13">PRICON MICROELECTRONICS INC. <br> OTKS 2.0 EMPLOYEE ATTENDANCE REPORT</th>
 											</tr>
 											<tr>
-												<th style="text-align:center" colspan="13" style="font-size:100">For the Pay Period: '.$dateFrom.'~'.$dateTo.'</th>
+												<th style="text-align:center" colspan="13" style="font-size:100">For the Pay Period: '.htmlspecialchars((string)$dateFrom, ENT_QUOTES, 'UTF-8').'~'.htmlspecialchars((string)$dateTo, ENT_QUOTES, 'UTF-8').'</th>
 											</tr>
 											<tr>';
 					$timecard_body .=  '
-												<th colspan="7">Employee Name: '.$ln.', '.$fn.' '.substr($mn, 0, 1).'.</th>										
-												<th colspan="8">Dept/Sect Name: '.$dept.'</th>										
+												<th colspan="7">Employee Name: '.htmlspecialchars((string)$ln, ENT_QUOTES, 'UTF-8').', '.htmlspecialchars((string)$fn, ENT_QUOTES, 'UTF-8').' '.htmlspecialchars(substr((string)$mn, 0, 1), ENT_QUOTES, 'UTF-8').'.</th>										
+												<th colspan="8">Dept/Sect Name: '.htmlspecialchars((string)$dept, ENT_QUOTES, 'UTF-8').'</th>										
 											</tr>
 											<tr>
-												<th colspan="13">Employee Number: '.$empno.'</th>
+												<th colspan="13">Employee Number: '.htmlspecialchars((string)$empno, ENT_QUOTES, 'UTF-8').'</th>
 											</tr>
 											<tr>
 												<th>Date</th>
@@ -180,41 +182,42 @@ $(document).ready(function(){
 										<tbody>';
 							/* late file ot */
 							$late_file_ot_all = OTKSR::getInstance()->getEom_late_file_ot($empno, $dateFrom, $dateTo);
-							if($late_file_ot_all != 0 || $late_file_ot_all != "0"){
+							if(is_array($late_file_ot_all)){
 								$row_ctr += count($late_file_ot_all['empno']);
 								for( $x=0; $x<count($late_file_ot_all['empno']); $x++ ){
 									$late_ot_reg 		= 0;
 									$late_ot_special 	= 0;
 									$late_ot_sunday 	= 0;
 									$late_ot_holiday 	= 0;
+									$date_late_ot = '';
 									if( $late_file_ot_all['ot_type'][$x] == 1){
 										$date_late_ot = date('d-M-y',strtotime( $late_file_ot_all['ot_date'][$x] ));
-										$late_ot_reg = $late_file_ot_all['ot_count'][$x];
+										$late_ot_reg = (float)$late_file_ot_all['ot_count'][$x];
 										$totalRegOT += $late_ot_reg;
 									}
 									if($late_file_ot_all['ot_type'][$x] == 2){
 										$date_late_ot = date('d-M-y',strtotime( $late_file_ot_all['ot_date'][$x] ));
-										$late_ot_special = $late_file_ot_all['ot_count'][$x];
+										$late_ot_special = (float)$late_file_ot_all['ot_count'][$x];
 										$totalSpeOT += $late_ot_special;
 									}
 									if($late_file_ot_all['ot_type'][$x] == 3){
 										$date_late_ot = date('d-M-y',strtotime( $late_file_ot_all['ot_date'][$x] ));
-										$late_ot_sunday = $late_file_ot_all['ot_count'][$x];
+										$late_ot_sunday = (float)$late_file_ot_all['ot_count'][$x];
 										$$totalSunOT += $late_ot_sunday;
 									}
 									if($late_file_ot_all['ot_type'][$x] == 4){
 										$date_late_ot = date('d-M-y',strtotime( $late_file_ot_all['ot_date'][$x] ));
-										$late_ot_holiday = $late_file_ot_all['ot_count'][$x];
+										$late_ot_holiday = (float)$late_file_ot_all['ot_count'][$x];
 										$totalHolOT += $late_ot_holiday;
 									}
 									if($late_file_ot_all['ot_type'][$x] == 5){
 										$date_late_ot = date('d-M-y',strtotime( $late_file_ot_all['ot_date'][$x] ));
-										$late_ot_special = $late_file_ot_all['ot_count'][$x];
+										$late_ot_special = (float)$late_file_ot_all['ot_count'][$x];
 										$totalSpeOT += $late_ot_special;
 									}
 									if($late_file_ot_all['ot_type'][$x] == 6){
 										$date_late_ot = date('d-M-y',strtotime( $late_file_ot_all['ot_date'][$x] ));
-										$late_ot_holiday = $late_file_ot_all['ot_count'][$x];
+										$late_ot_holiday = (float)$late_file_ot_all['ot_count'][$x];
 										$totalHolOT += $late_ot_holiday;
 									}
 									
@@ -237,7 +240,7 @@ $(document).ready(function(){
 							
 							/* Late File */							
 							$late_filled_leaves = OTKSR::getInstance()->getIndividualTimeCard_late_file($empno, $dateFrom, $dateTo);
-							if($late_filled_leaves != 0 ){
+							if($late_filled_leaves instanceof mysqli_result){
 								$row_ctr += $late_filled_leaves->num_rows;
 								while($rowTimeCard = mysqli_fetch_array($late_filled_leaves)) {
 									$date = $rowTimeCard['date'];
@@ -266,14 +269,14 @@ $(document).ready(function(){
 										$timeIn = substr($rowTimeCard['time_in'], 0, 5);
 										$timeOut = substr($rowTimeCard['time_out'], 0, 5);
 									}
-									$regOT = $rowTimeCard['ot1'];
-									$sundayOT = $rowTimeCard['ot3'] + $rowTimeCard['ot3a'];
-									$specialOT = $rowTimeCard['ot2'] + $rowTimeCard['ot2a'] + $rowTimeCard['ot5'] + $rowTimeCard['ot5a'];
-									$holidayOT = $rowTimeCard['ot4'] + $rowTimeCard['ot4a'] + $rowTimeCard['ot6'] + $rowTimeCard['ot6a'];
-									$undertime = $rowTimeCard['under_conv'] + $rowTimeCard['late_conv'];
-									$nightDiff = $rowTimeCard['nightdiff'];
-									$absent = $rowTimeCard['absent'];
-									$slvl = $rowTimeCard['leavenum'];
+									$regOT = (float)$rowTimeCard['ot1'];
+									$sundayOT = (float)$rowTimeCard['ot3'] + (float)$rowTimeCard['ot3a'];
+									$specialOT = (float)$rowTimeCard['ot2'] + (float)$rowTimeCard['ot2a'] + (float)$rowTimeCard['ot5'] + (float)$rowTimeCard['ot5a'];
+									$holidayOT = (float)$rowTimeCard['ot4'] + (float)$rowTimeCard['ot4a'] + (float)$rowTimeCard['ot6'] + (float)$rowTimeCard['ot6a'];
+									$undertime = (float)$rowTimeCard['under_conv'] + (float)$rowTimeCard['late_conv'];
+									$nightDiff = (float)$rowTimeCard['nightdiff'];
+									$absent = (float)$rowTimeCard['absent'];
+									$slvl = (float)$rowTimeCard['leavenum'];
 									$totalSLVL += $slvl;
 									$source = $date;
 									$dateFormat = new DateTime($source);
@@ -296,8 +299,8 @@ $(document).ready(function(){
 							}
 							/* Regular In and Out */							
 							$individualTimeCard = OTKSR::getInstance()->getIndividualTimeCard($empno, $dateFrom, $dateTo);
-							$row_ctr += $individualTimeCard->num_rows;
-							while($rowTimeCard = mysqli_fetch_array($individualTimeCard)) {
+							$row_ctr += ($individualTimeCard instanceof mysqli_result) ? $individualTimeCard->num_rows : 0;
+							while($individualTimeCard instanceof mysqli_result && ($rowTimeCard = mysqli_fetch_array($individualTimeCard))) {
 								$date = $rowTimeCard['date'];
 								if($rowTimeCard['leavecode'] == 1) {
 									$timeIn = "SL";
@@ -324,14 +327,14 @@ $(document).ready(function(){
 									$timeIn = substr($rowTimeCard['time_in'], 0, 5);
 									$timeOut = substr($rowTimeCard['time_out'], 0, 5);
 								}
-								$regOT = $rowTimeCard['ot1'];
-								$sundayOT = $rowTimeCard['ot3'] + $rowTimeCard['ot3a'];
-								$specialOT = $rowTimeCard['ot2'] + $rowTimeCard['ot2a'] + $rowTimeCard['ot5'] + $rowTimeCard['ot5a'];
-								$holidayOT = $rowTimeCard['ot4'] + $rowTimeCard['ot4a'] + $rowTimeCard['ot6'] + $rowTimeCard['ot6a'];
-								$undertime = $rowTimeCard['under_conv'] + $rowTimeCard['late_conv'];
-								$nightDiff = $rowTimeCard['nightdiff'];
-								$absent = $rowTimeCard['absent'];
-								$slvl = $rowTimeCard['leavenum'];
+								$regOT = (float)$rowTimeCard['ot1'];
+								$sundayOT = (float)$rowTimeCard['ot3'] + (float)$rowTimeCard['ot3a'];
+								$specialOT = (float)$rowTimeCard['ot2'] + (float)$rowTimeCard['ot2a'] + (float)$rowTimeCard['ot5'] + (float)$rowTimeCard['ot5a'];
+								$holidayOT = (float)$rowTimeCard['ot4'] + (float)$rowTimeCard['ot4a'] + (float)$rowTimeCard['ot6'] + (float)$rowTimeCard['ot6a'];
+								$undertime = (float)$rowTimeCard['under_conv'] + (float)$rowTimeCard['late_conv'];
+								$nightDiff = (float)$rowTimeCard['nightdiff'];
+								$absent = (float)$rowTimeCard['absent'];
+								$slvl = (float)$rowTimeCard['leavenum'];
 								$totalRegOT += $regOT;
 								$totalSunOT += $sundayOT;
 								$totalSpeOT += $specialOT;
@@ -377,7 +380,7 @@ $(document).ready(function(){
 										<td>'.number_format($totalSLVL,2,'.','').'</td>
 									</tr>
 									<tr>
-										<td colspan=5>'.$loggedName.'</td>
+										<td colspan=5>'.htmlspecialchars((string)$loggedName, ENT_QUOTES, 'UTF-8').'</td>
 										<td colspan=6 align="right">'.date('Y-m-d H:i:s').'</td>
 									</tr>
 							</tbody>

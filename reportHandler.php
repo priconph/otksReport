@@ -2,6 +2,19 @@
 	if(is_ajax()) {
 		if(isset($_POST["action"]) && !empty($_POST["action"])) {
 			$action = $_POST["action"];
+				/* never let warnings or exception text reach the browser; answer failures with one JSON document */
+				ini_set('display_errors', '0');
+				ini_set('log_errors', '1');
+				ob_start();
+				set_exception_handler(function (Throwable $e) {
+					error_log('reportHandler.php: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+					while (ob_get_level() > 0) {
+						ob_end_clean();
+					}
+					http_response_code(500);
+					header('Content-Type: application/json; charset=utf-8');
+					echo json_encode(['error' => 'Server error']);
+				});
 			switch($action) {
 				//case "" : functionName(); break;
 				case "updateRawData" 				: updateRawData(); break;
@@ -72,7 +85,7 @@
 	}
 	
 	function updateRawData() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance() -> updateRawData($return['pkid'], $return['array_update'], $return['username']);
@@ -83,7 +96,7 @@
 	}
 	
 	function loadEmpInfo() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance() -> getEmpInfo(strtoupper($return['empno']));
@@ -99,7 +112,7 @@
 	}
 	
 	function addRawDataGuard() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance() -> addRawDataGuard($return['empno'], $return['date'], $return['time_in'], $return['mode_in'], $return['date_out'], $return['time_out'], $return['mode_out'], $return['username'], $return['approver'], $return['status']);
@@ -112,7 +125,7 @@
 	}
 	
 	function addRawData() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		// $result = OTKSR::getInstance() -> addRawData($return['empno'], $return['date'], $return['time_in'], $return['mode_in'], $return['date_out'], $return['time_out'], $return['mode_out'], $return['username'], $return['approver'], $return['status']);
@@ -127,7 +140,7 @@
 	}
 		
 	function deleteRawData() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance() -> deleteRawData($return['pkid'], $return['empno'], $return['date'], $return['date_out'], $return['time_in'], $return['time_out']);
@@ -136,7 +149,7 @@
 	}
 	
 	function delete_raw_data() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance() -> delete_raw_data($return['pkid']);
@@ -145,7 +158,7 @@
 	}
 	
 	function updateDailyTFM() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";		
 		$result = OTKSR::getInstance() -> updateRecordDailyTFM($return['pkid'], $return['empno'], $return['date'], $return['time_in'], $return['mode_in'], $return['date_out'], $return['time_out'], $return['mode_out'], $return['reg_hours'],  $return['ot_hours'], $return['absent'], $return['late_conv'], $return['under_conv'], $return['slvl_code'], $return['slvl_num'], $return['ot1'], $return['ot2'], $return['ot2a'], $return['ot3'], $return['ot3a'], $return['ot4'], $return['ot4a'], $return['ot5'], $return['ot5a'], $return['ot6'], $return['ot6a'], $return['nightdiff'], $return['aut'], $return['username']);
@@ -156,14 +169,14 @@
 	}
 	
 	function deleteDailyTFM() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance() -> deleteDailyTFM($return['pkid'], $return['empno'], $return['date'], $return['date_out'], $return['time_in'], $return['time_out']);
 	}
 	
 	function updateSLVL() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance() -> uploadSLVL($return['empno'], $return['code'], $return['date'], $return['num_days'], $return['paid_leave'], $return['username'],$return['cutoff_date']);
@@ -174,7 +187,7 @@
 	}
 	
 	function deleteHolidayAbsent() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance() -> deleteRecordHoliday($return['date']);
@@ -183,7 +196,7 @@
 	}
 	
 	function approveAttendance() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance() -> approveAttendance($return['status'], $return['pkid'], $return['username'], $return['empno'], $return['dateIn']);
@@ -192,7 +205,7 @@
 	}
 	
 	function getApproverName() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance() -> getApproverName($return['empno']);
@@ -201,7 +214,7 @@
 	}
 	
 	function recomputeTFM() {
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance() -> getEmpNoTkDataHRIS($return['startDate'], $return['endDate'], $return['username']);
@@ -218,7 +231,7 @@
 	}
 	
 	function compute_employee_tfm_data(){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		
@@ -247,7 +260,7 @@
 		$html .= ' 			<th>Nightdiff</th>';
 		$html .= ' 		</tr>';
 		$html .= '	</thead>';
-		for($x=0;$x<count($result['empno']);$x++){
+		for($x=0;$x<count($result['empno'] ?? []);$x++){
 			$html .= '<tr align="center">';
 			$html .= 	'<td>'.$result['empno'][$x].'</td>';
 			$html .= 	'<td>'.$result['date'][$x].'</td>';
@@ -268,23 +281,23 @@
 	}
 	
 	function load_employee_information(){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = $_POST;
 		$result = "";
 		$result = OTKSR::getInstance()->load_employee_information($return['empno']);
-		$row = mysqli_fetch_array($result);
-		$return['EmpNo']  		= $row['EmpNo'];
-		$return['Name']  		= $row['firstname'] . " " . $row['lastname'];
-		$return['Position']  	= $row['Position'];
-		$return['Department']  	= $row['Department'];
-		$return['Section']  	= $row['Section'];
+		$row = mysqli_fetch_array($result) ?: [];
+		$return['EmpNo']  		= $row['EmpNo'] ?? null;
+		$return['Name']  		= ($row['firstname'] ?? '') . " " . ($row['lastname'] ?? '');
+		$return['Position']  	= $row['Position'] ?? null;
+		$return['Department']  	= $row['Department'] ?? null;
+		$return['Section']  	= $row['Section'] ?? null;
 		
 		$return["result"] = json_encode($result);
 		echo json_encode($return);
 	}
 	
 	function count_unfiled_straight_hours(){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = array();
 		$p = $_POST;
 		$result = '';
@@ -294,7 +307,7 @@
 	}
 	
 	function fix_attendance_time_in(){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = array();
 		$p = $_POST;
 		$result = '';
@@ -304,7 +317,7 @@
 	}
 
 	function fix_shift(){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = array();
 		$p = $_POST;
 		$result = '';
@@ -314,7 +327,7 @@
 	}
 	
 	function fix_attendance_time_out(){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = array();
 		$p = $_POST;
 		$result = '';
@@ -324,7 +337,7 @@
 	}
 	
 	function fix_attendance_time_in_prev(){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = array();
 		$p = $_POST;
 		$result = '';
@@ -334,7 +347,7 @@
 	}
 	
 	function fix_attendance_time_out_prev(){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = array();
 		$p = $_POST;
 		$result = '';
@@ -402,7 +415,7 @@
 	}
 	
 	function save_adjusted_time_in_out(){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = array();
 		$p = $_POST;
 		$result = '';
@@ -420,7 +433,7 @@
 	}
 	
 	function load_all_empno(){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$result = OTKSR::getInstance()->load_all_empno();
 		$empno = array();
 		while($row = mysqli_fetch_array($result)){
@@ -430,7 +443,7 @@
 	}
 	
 	function validate_existing_empno(){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$p = $_POST;
 		$empno = $p['empno'];
 		$result = OTKSR::getInstance()->validate_existing_empno($empno);
@@ -443,13 +456,13 @@
 	}
 
 	function get_empname($empno){
-		require_once("otksr-oop.php");
+		require_once(__DIR__ . '/otksr-oop.php');
 		$empname = OTKSR::getInstance()->get_empname($empno);
 		return $empname;
 	}
 	
 	function save_offset(){
-		require_once("otksr-oop.php");	
+		require_once(__DIR__ . '/otksr-oop.php');	
 		$p 				= $_POST;
 		$empno 			= $p['empno'];
 		$date			= $p['date'];
@@ -460,7 +473,7 @@
 	}
 	
 	function delete_offset(){
-		require_once("otksr-oop.php");	
+		require_once(__DIR__ . '/otksr-oop.php');	
 		$p 				= $_POST;
 		$pkid 			= $p['pkid'];
 		$username		= $p['username'];
@@ -470,7 +483,7 @@
 	}
 	
 	function save_holiday(){
-		require_once("otksr-oop.php");	
+		require_once(__DIR__ . '/otksr-oop.php');	
 		$p 				= $_POST;
 		$date 			= $p['date'];
 		$username		= $p['username'];
@@ -482,7 +495,7 @@
 	}
 	
 	function delete_holiday(){
-		require_once("otksr-oop.php");	
+		require_once(__DIR__ . '/otksr-oop.php');	
 		$p 				= $_POST;
 		$pkid 			= $p['pkid'];
 		$username		= $p['username'];
@@ -493,7 +506,7 @@
 	
 	function upload_attendance_csv(){
 		$return = array();
-		if(file_exists($_FILES["file_1"]["tmp_name"])){
+		if(file_exists($_FILES['file_1']['tmp_name'] ?? '')){
 			$file = $_FILES["file_1"]["tmp_name"];
 			$file_name = $_FILES["file_1"]["name"];
 			$extension = explode('.',$file_name);
@@ -505,7 +518,7 @@
 				$file = fopen($file,"r");
 				$header = true;
 				echo '<table id="tbl_attendance_update" class="table">';
-				while (($line = fgetcsv($file)) !== FALSE) {
+				while (($line = fgetcsv($file, null, ',', '"', '\\')) !== FALSE) { $line = array_pad($line, 8, '');
 				  if($header){
 					 echo '	<thead>';
 					 echo '		<tr>';
@@ -548,7 +561,7 @@
 	}
 	
 	function update_raw_data_from_csv(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$p = $_POST;
 		$record = $p['record'];
 		$result = OTKSR::getInstance()->update_raw_data_from_csv($record);
@@ -564,7 +577,7 @@
 	 * 05-02-2023
 	 */
 	function batch_insert_data_from_csv(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$record = $_POST['record'];
 		$username = $_POST['username'];
 		$result = OTKSR::getInstance()->batch_insert_data_from_csv($record, $username);
@@ -575,7 +588,7 @@
 	}
 	
 	function delete_leave(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$p = $_POST;
 		$pkid = $p['pkid'];
 		$result = OTKSR::getInstance()->delete_leave($pkid);
@@ -585,21 +598,21 @@
 	}
 	
 	function edit_leave_information(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = array();
 		$return['msg'] = OTKSR::getInstance()->edit_leave_information( $_POST['pkid'], $_POST['dol'], $_POST['tol'], $_POST['lc'], $_POST['pl'], $_POST['cod'] );
 		echo json_encode($return);
 	}
 	
 	function delete_employee_dayoff(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$return = array();
 		$return['msg'] = OTKSR::getInstance()->delete_employee_dayoff( $_POST['empno'] );
 		echo json_encode($return);
 	}
 	
 	function add_employee_dayoff(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$p = $_POST;
 		$result = OTKSR::getInstance()->add_employee_dayoff($p['txt_empno'],$p['txt_type'],$p['txt_saturday'],$p['txt_username']);
 		$return = array();
@@ -608,7 +621,7 @@
 	}
 	
 	function add_yec_training(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$result = OTKSR::getInstance()->add_yec_training($_POST);
 		$return = array();
 		$return['msg'] = $result;
@@ -616,7 +629,7 @@
 	}
 	
 	function delete_yec_training(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$result = OTKSR::getInstance()->delete_yec_training($_POST);
 		$return = array();
 		$return['msg'] = $result;
@@ -624,7 +637,7 @@
 	}
 	
 	function get_undertime_late(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$result = OTKSR::getInstance()->get_undertime_late($_POST);
 		$return = array();
 		while($row = mysqli_fetch_array($result)){
@@ -635,7 +648,7 @@
 	}
 	
 	function add_late_ot(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$result = OTKSR::getInstance()->add_late_ot($_POST);
 		$return = array();
 		$return['msg'] = $result;
@@ -643,7 +656,7 @@
 	}
 	
 	function delete_late_ot(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$result = OTKSR::getInstance()->delete_late_ot($_POST);
 		$return = array();
 		$return['msg'] = $result;
@@ -651,7 +664,7 @@
 	}
 	
 	function get_elfs_data(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$result 	= OTKSR::getInstance()->get_elfs_data(1);
 		$html  		= '';
 		while($row = mysqli_fetch_array($result)){
@@ -677,13 +690,13 @@
 	}
 	
 	function get_elfs_status($EmpNo, $new_leave_applied, $date_absent_from, $cutoff_date){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$result 	= OTKSR::getInstance()->get_status($EmpNo, $new_leave_applied, $date_absent_from, $cutoff_date);
 		return $result;
 	}
 
 	// function save_elfs_data_otks(){
-		// require_once('otksr-oop.php');
+		// require_once(__DIR__ . '/otksr-oop.php');
 		// $result 	= OTKSR::getInstance()->get_elfs_data(0);
 		// $array_elfs_data = array();
 		// if($result->num_rows == 0){
@@ -725,7 +738,7 @@
 	// }
 	
 	function save_elfs_data_otks(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$save_result = array();
 		$save_result[] = OTKSR::getInstance()->upload_slvl_elfs(    
 			$_POST['empno'],
@@ -743,7 +756,7 @@
 	}
 
 	function save_adjusted_shift(){
-		require_once('otksr-oop.php');
+		require_once(__DIR__ . '/otksr-oop.php');
 		$array_in_out = $_POST['array_in_out'];
 		$save_result = array();
 

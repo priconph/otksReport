@@ -1,6 +1,9 @@
-﻿<?php
-$excel_class = 'class/excel.php';
-require_once('otksr-oop.php');
+<?php
+$excel_class = __DIR__ . '/class/excel.php';
+ob_start();
+ini_set('display_errors','0');
+ini_set('log_errors','1');
+require_once(__DIR__ . '/otksr-oop.php');
 
 if(file_exists($excel_class)){
 	include($excel_class);
@@ -9,7 +12,7 @@ if(file_exists($excel_class)){
 	exit;
 }
 
-$month_year = $_GET['ms'];
+$month_year = $_GET['ms'] ?? '';
 $month_name = date('F', strtotime($month_year));
 $year 		= date('Y', strtotime($month_year));
 $year_mos   = date('Y-m-', strtotime($month_year));
@@ -91,9 +94,9 @@ $result_div = OTKSR::getInstance()->load_division_list();
 		$max_row = $result->num_rows;
 		$record_ctr = 0;
 		while($row = mysqli_fetch_array($result)) {
-			$late_mins 			= OTKSR::getInstance()->getMinutesEquivalent($row['late_mins']);
-			$under_mins 		= OTKSR::getInstance()->getMinutesEquivalent($row['under_mins']);
-			$total_late_tardi 	= $late_mins + $under_mins;
+			$late_mins 			= OTKSR::getInstance()->getMinutesEquivalent((float)$row['late_mins']);
+			$under_mins 		= OTKSR::getInstance()->getMinutesEquivalent((float)$row['under_mins']);
+				$total_late_tardi 	= (float)$late_mins + (float)$under_mins;
 			
 			if($empno_latest == '') {
 				$gtotal_late_tardi += $total_late_tardi;

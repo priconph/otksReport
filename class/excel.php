@@ -1,39 +1,48 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// PhpSpreadsheet-based wrapper (replaces the legacy PHPExcel wrapper).
+// Do not enable display_errors here: any warning would be written into the downloaded file.
 
-$parent_class = "../media/PHPExcel.php";
-if(file_exists($parent_class)){
-	include($parent_class); //call the parent class
-}else{
-	echo 'file '.$parent_class.' does not exist!';
+$autoload = __DIR__ . '/../../media/vendor/autoload.php';
+if(!file_exists($autoload)){
+	error_log('PhpSpreadsheet autoload not found: ' . $autoload);
+	http_response_code(500);
+	echo 'Export library is not available.';
 	exit;
 }
-	
-class EXCEL extends PHPExcel{
+require_once $autoload;
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+class EXCEL extends Spreadsheet{
 	public $title = '';
 	public $objSheet = '';
-	/* 
-		create new phpexcel page
+	/*
+		create new spreadsheet page
 	*/
 	public function add_page(){
 		$this->objSheet = $this->getActiveSheet();
 		$this->objSheet->setTitle($this->title); //set title cont.
 	}
-	/* 
+	/*
 		Set default font style
 	*/
 	public function set_default_font_style(){
 		$this->getDefaultStyle()->getFont()->setName('Times New Roman');
 	}
-	/* 
+	/*
 		Set active sheet
 	*/
 	public function set_active_sheet($sheet_number){
 		$this->setActiveSheetIndex($sheet_number);
 	}
-	/* 
+	/*
 		Create new sheet
 	*/
 	public function add_sheet($index){
@@ -42,21 +51,21 @@ class EXCEL extends PHPExcel{
 		$this->objSheet = $this->getActiveSheet();
 		$this->objSheet->setTitle($this->title); //set title cont.
 	}
-	/* 
+	/*
 		Set cell width
 	*/
 	public function set_width($cell,$width){
 		$this->objSheet->getColumnDimension($cell)->setWidth($width);
 	}
-	/* 
+	/*
 		Set cell width using array
 	*/
 	public function set_width_array($cell,$width){
 		for($i=0;$i<count($width);$i++) {
-			$this->objSheet->getColumnDimension($cell[$i])->setWidth($width[$i]);
+			$this->objSheet->getColumnDimension($cell[$i])->setWidth((float)$width[$i]);
 		}
 	}
-	/* 
+	/*
 		Set height
 	*/
 	public function set_height($array_row,$array_height){
@@ -74,89 +83,56 @@ class EXCEL extends PHPExcel{
 		$this->place_value('E5','DATE','string','',true);
 		$this->place_value('F5','TIME IN','string','',true);
 		$this->place_value('G5','TIME OUT','string','',true);
-		$this->place_value('H5','LATE/UND.','string','',true);			
-		$this->place_value('A7',$division,'string','',true);		
-		
+		$this->place_value('H5','LATE/UND.','string','',true);
+		$this->place_value('A7',$division,'string','',true);
+
 		/* Set header format */
 		$this->set_format('A1',$header_format);
 		$this->set_format('A2',$header_format);
 		$this->set_format('A3',$header_format);
 		$this->set_format('A5:L5',$header_format);
 		$this->set_format('A7',$division_format);
-		
+
 		/* Set page margin */
 		$this->getActiveSheet()->getPageMargins()->setTop(1);
 		$this->getActiveSheet()->getPageMargins()->setRight(0.75);
 		$this->getActiveSheet()->getPageMargins()->setLeft(0.75);
 		$this->getActiveSheet()->getPageMargins()->setBottom(1);
-			
+
 		$this->getActiveSheet()->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1, 7);
 	}
-	/* 
+	/*
 		Set borders
 	*/
 	public function set_borders($cell,$left,$right,$top,$bottom){
-		$default_border = PHPExcel_Style_Border::BORDER_THIN;
+		$default_border = Border::BORDER_THIN;
 		if($left == '1' && $right == '1' && $top == '1' && $bottom == '1'){
-			$styleArray = array(
-			  'borders' => array(
-				'allborders' => array(
-				  'style' => $default_border,
+			$this->objSheet->getStyle($cell)->applyFromArray(array(
+				'borders' => array(
+					'allBorders' => array('borderStyle' => $default_border)
 				)
-			  )
-			);
-			$this->objSheet->getStyle($cell)->applyFromArray($styleArray);
+			));
 		}else{
-			if($left == '1'){
-				$left_border = array(
-				  'borders' => array(
-					'left' => array(
-						  'style' => $default_border,
+			$sides = array('left' => $left, 'right' => $right, 'top' => $top, 'bottom' => $bottom);
+			foreach($sides as $side => $enabled){
+				if($enabled == '1'){
+					$this->objSheet->getStyle($cell)->applyFromArray(array(
+						'borders' => array(
+							$side => array('borderStyle' => $default_border)
 						)
-					)
-				);
-				$this->objSheet->getStyle($cell)->applyFromArray($left_border);
-			}
-			if($right == '1'){
-				$right_border = array(
-				  'borders' => array(
-					'right' => array(
-						  'style' => $default_border,
-						)
-					)
-				);
-				$this->objSheet->getStyle($cell)->applyFromArray($right_border);
-			}
-			if($top == '1'){
-				$top_border = array(
-				  'borders' => array(
-					'top' => array(
-						  'style' => $default_border,
-						)
-					)
-				);
-				$this->objSheet->getStyle($cell)->applyFromArray($top_border);
-			}
-			if($bottom == '1'){
-				$bottom_border = array(
-				  'borders' => array(
-					'bottom' => array(
-						  'style' => $default_border,
-						)
-					)
-				);
-				$this->objSheet->getStyle($cell)->applyFromArray($bottom_border);
+					));
+				}
 			}
 		}
 	}
-	/* 
+	/*
 		merge cells
 	*/
 	public function merge_cells($cell){
-		$this->objSheet->mergeCells($cell); 
+		$this->objSheet->mergeCells($cell);
 	}
-	/* 
-		set font 
+	/*
+		set font
 	*/
 	public function set_font($cell,$bold,$color,$background_color,$size,$font){
 		if(!$bold){
@@ -164,12 +140,6 @@ class EXCEL extends PHPExcel{
 		}
 		if($color == ''){
 			$color = '000000';
-		}
-		if($background_color != ''){
-			$background_type = PHPExcel_Style_Fill::FILL_SOLID;
-		}else{
-			$background_color 	= '';
-			$background_type	= '';
 		}
 		if($size == ''){
 			$size = '10';
@@ -181,25 +151,24 @@ class EXCEL extends PHPExcel{
 			'font'  => array(
 				'bold'  => $bold,
 				'color' => array('rgb' => $color),
-				'size'  => $size,
+				'size'  => (float)$size,
 				'name'  => $font
 			)
-			,'fill' => array(
-					'type' => $background_type,
-					'color' => array('rgb' => $background_color)
-			)
 		);
+		if($background_color != ''){
+			$styleArray['fill'] = array(
+				'fillType' => Fill::FILL_SOLID,
+				'startColor' => array('rgb' => $background_color)
+			);
+		}
 		$this->objSheet->getStyle($cell)->applyFromArray($styleArray);
 	}
-	/* 
+	/*
 		place values
 	*/
-	public function place_value($cell,$value,$data_type){
-		if(!isset($data_type)){
-			$data_type = '';
-		}
-		if(isset($data_type) && $data_type == 'string'){
-			$this->objSheet->setCellValueExplicit($cell, $value, PHPExcel_Cell_DataType::TYPE_STRING);
+	public function place_value($cell,$value,$data_type = ''){
+		if($data_type == 'string'){
+			$this->objSheet->setCellValueExplicit($cell, (string)$value, DataType::TYPE_STRING);
 		}else if($data_type == 'number_2_decimal'){
 			$this->objSheet->getCell($cell)->setValue($value);
 			$this->objSheet->getStyle($cell)->getNumberFormat()->setFormatCode('0.00');
@@ -208,133 +177,77 @@ class EXCEL extends PHPExcel{
 			$this->objSheet->getStyle($cell)->getNumberFormat()->setFormatCode('0');
 		}else if($data_type == 'percentage_0_decimal'){
 			$this->objSheet->getCell($cell)->setValue($value);
-			$this->objSheet->getStyle($cell)->getNumberFormat()->setFormatCode('0');
-			$style_array_percentage = array( 
-												'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE
-											);
-			$this->objSheet->getStyle($cell)->getNumberFormat()->applyFromArray( $style_array_percentage );
+			$this->objSheet->getStyle($cell)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_PERCENTAGE);
 		}else if($data_type == 'percentage_2_decimal'){
 			$this->objSheet->getCell($cell)->setValue($value);
-			$this->objSheet->getStyle($cell)->getNumberFormat()->setFormatCode('0');
-			$style_array_percentage = array( 
-												'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00
-											);
-			$this->objSheet->getStyle($cell)->getNumberFormat()->applyFromArray( $style_array_percentage );
+			$this->objSheet->getStyle($cell)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_PERCENTAGE_00);
 		}
 		else{
 			$this->objSheet->getCell($cell)->setValue($value);
 		}
 	}
-	
+
 	public function set_format($cell,$array_format){
-		$array_font = array();
-		$array_fill = array();
-		$array_alignment = array();
-		$array_format_code = array();
 		/********************
 		* 		FONT 		*
 		********************/
-		/* font style */
-		if(isset($array_format['name']) && $array_format['name'] != ''){
-			$name = $array_format['name'];
-		}else{
-			$name = "Times New Roman";
-		}
-		$array_font['name'] = $name;
-		/* font size */
-		if(isset($array_format['size']) && $array_format['size'] != ''){
-			$size = $array_format['size'];
-		}else{
-			$size = 10;
-		}
-		$array_font['size'] = $size;
-		/* bold */
-		if(isset($array_format['bold']) && $array_format['bold'] != '' && $array_format['bold'] != false){
-			$bold = $array_format['bold'];
-		}else{
-			$bold = false;
-		}
-		$array_font['bold'] = $bold;
-		/* color */
-		if(isset($array_format['color']) && $array_format['color'] != ''){
-			$color = $array_format['color'];
-		}else{
-			$color = '000000';
-		}
-		$array_font['color'] = array('rgb' => $color);
-		/********************
-		* 		FILL 		*
-		********************/
-		/* fill_color */
-		if(isset($array_format['fill_color']) && $array_format['fill_color'] != ''){
-			$color = $array_format['fill_color'];
-			$type = PHPExcel_Style_Fill::FILL_SOLID;
-		}else{
-			$color = 'FFFFFFFF';
-			$type = '';
-		}
-		$array_fill['type'] = $type;
-		$array_fill['color'] = array('rgb' => $color);
+		$array_font = array();
+		$array_font['name'] = (isset($array_format['name']) && $array_format['name'] != '') ? $array_format['name'] : "Times New Roman";
+		$array_font['size'] = (isset($array_format['size']) && $array_format['size'] != '') ? (float)$array_format['size'] : 10;
+		$array_font['bold'] = (!empty($array_format['bold']));
+		$array_font['color'] = array('rgb' => (isset($array_format['color']) && $array_format['color'] != '') ? $array_format['color'] : '000000');
 		/********************
 		* 	  ALIGNMENT	   	*
 		********************/
-		/* alignment */
+		$array_alignment = array();
 		if(isset($array_format['h_alignment']) && $array_format['h_alignment'] != ''){
 			switch($array_format['h_alignment']){
-				case "left" 	: $horizontal = PHPExcel_Style_Alignment::HORIZONTAL_LEFT; break;
-				case "right"	: $horizontal = PHPExcel_Style_Alignment::HORIZONTAL_RIGHT; break;
-				case "center"	: $horizontal = PHPExcel_Style_Alignment::HORIZONTAL_CENTER; break;
+				case "left" 	: $array_alignment['horizontal'] = Alignment::HORIZONTAL_LEFT; break;
+				case "right"	: $array_alignment['horizontal'] = Alignment::HORIZONTAL_RIGHT; break;
+				case "center"	: $array_alignment['horizontal'] = Alignment::HORIZONTAL_CENTER; break;
 			}
-		}else{
-			// $horizontal = PHPExcel_Style_Alignment::HORIZONTAL_LEFT;
-			$horizontal = '';
 		}
-		if(isset($array_format['wordwrap']) && $array_format['wordwrap'] != '' && $array_format['wordwrap'] != false){
-			$wordwrap = true;
-		}else{
-			$wordwrap = false;
-		}
-		$array_alignment['horizontal'] 	= $horizontal;
-		$array_alignment['vertical'] 	= PHPExcel_Style_Alignment::VERTICAL_CENTER;
-		$array_alignment['wrap'] 		= $wordwrap;
-		
+		$array_alignment['vertical'] = Alignment::VERTICAL_CENTER;
+		$array_alignment['wrapText'] = (!empty($array_format['wordwrap']));
+
 		/********************
 		* 	ARRAY STYLE	*
 		********************/
 		$styleArray = array(
 			 'font'  => $array_font
-			,'fill' => $array_fill
 			,'alignment' => $array_alignment
 		);
+		/* FILL - only when a fill colour is requested */
+		if(isset($array_format['fill_color']) && $array_format['fill_color'] != ''){
+			$styleArray['fill'] = array(
+				'fillType' => Fill::FILL_SOLID,
+				'startColor' => array('rgb' => $array_format['fill_color'])
+			);
+		}
 		$this->objSheet->getStyle($cell)->applyFromArray($styleArray);
 	}
-	/* 
-		Generate Excel Output 
+	/*
+		Generate Excel Output
 	*/
 	public function output($filename, $file_type){
-		if($file_type == "2007"){
-			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-			header('Content-Disposition: attachment;filename='.$filename.'.xlsx'); //used for excel 2007 format
-			header('Cache-Control: max-age=0');
-			$objWriter = PHPExcel_IOFactory::createWriter($this, 'Excel2007'); //used for excel 2007 format
-		}else if($file_type == "2003"){
-			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-			header('Content-Disposition: attachment;filename='.$filename.'.xls'); // used for excel 2003 format
-			header('Cache-Control: max-age=0');
-			$objWriter = PHPExcel_IOFactory::createWriter($this, 'Excel5'); // used for excel 2003 format
+		$filename = preg_replace('/[^A-Za-z0-9 _.\-]/', '', (string)$filename);
+		if($file_type == "2003"){
+			$content_type = 'application/vnd.ms-excel';
+			$extension = '.xls';
+			$objWriter = new Xls($this);
 		}else{
-			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-			header('Content-Disposition: attachment;filename='.$filename.'.xlsx'); //used for excel 2007 format
-			header('Cache-Control: max-age=0');
-			$objWriter = PHPExcel_IOFactory::createWriter($this, 'Excel2007'); //used for excel 2007 format
+			$content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+			$extension = '.xlsx';
+			$objWriter = new Xlsx($this);
 		}
-//		ob_end_clean();
-        if (ob_get_contents()) ob_end_clean();
+		// discard any stray output so it does not end up inside the file
+		while(ob_get_level() > 0){
+			ob_end_clean();
+		}
+		header('Content-Type: '.$content_type);
+		header('Content-Disposition: attachment;filename="'.$filename.$extension.'"');
+		header('Cache-Control: max-age=0');
 		$objWriter->save('php://output');
 	}
-	// public function pagebreak() {
-		// $objPHPExcel->getActiveSheet()
-		// ->setBreak( 'A46' , PHPExcel_Worksheet::BREAK_ROW );
-	// }
 }
 ?>

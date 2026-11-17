@@ -55,8 +55,8 @@ $sTable = 'vw_raw_data_rev';
 require_once('config.php'); // defines $username, $password, $db_name, $server
 
 try {
-	/* Charset intentionally not set: old mysql_* connection used the server default (open item). */
-	$pdo = new PDO('mysql:host=' . $server . ';dbname=' . $db_name, $username, $password, [
+	/* Charset utf8mb4 confirmed by owner. */
+	$pdo = new PDO('mysql:host=' . $server . ';dbname=' . $db_name . ';charset=utf8mb4', $username, $password, [
 		PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
 		PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 		PDO::ATTR_EMULATE_PREPARES   => false,

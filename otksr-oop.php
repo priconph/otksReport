@@ -2590,7 +2590,7 @@ class OTKSR extends mysqli
 						WHERE 
 							tkdataraw.date BETWEEN '".$dateFrom."' AND '".$dateTo."' 
 						AND 
-							tkdataraw.status=1 ORDER BY tbl_Department.Department, tkdataraw.date;";
+							tkdataraw.status=1 GROUP BY tkdataraw.empno, tbl_EmployeeInfo.LastName, tbl_EmployeeInfo.FirstName, tbl_EmployeeInfo.MiddleName, tbl_Department.Department ORDER BY tbl_Department.Department, MIN(tkdataraw.date);";
 			return $this->query($query);
 		}
 		public function getIndividualTimeCardEmpNoe($dateFrom, $dateTo) {

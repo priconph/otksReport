@@ -1,7 +1,13 @@
 <?php
-	require('../media/PHPExcel.php');
-	require_once("otksr-oop.php");
-	session_start();
+ob_start(); // keep stray output/warnings out of the binary download
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+	require_once __DIR__ . '/../media/vendor/autoload.php'; // phpoffice/phpspreadsheet (replaces legacy PHPExcel)
+	use PhpOffice\PhpSpreadsheet\Cell\DataType;
+	use PhpOffice\PhpSpreadsheet\Spreadsheet;
+	use PhpOffice\PhpSpreadsheet\Writer\Xls;
+	require_once __DIR__ . '/otksr-oop.php';
+	if (session_status() === PHP_SESSION_NONE) { session_start(); }
 	if (array_key_exists("username", $_SESSION))
 		{
 			$username = $_SESSION['username'];
@@ -10,10 +16,10 @@
 	//$ControlNumber = $_GET['ControlNumber'];
 	$dateToday = date("M. d, Y");
 	$dateTodayName = date("Ymd");
-	$dateFrom = $_GET['startDate'];
-	$dateTo = $_GET['endDate'];
+	$dateFrom = $_GET['startDate'] ?? '';
+	$dateTo = $_GET['endDate'] ?? '';
 	//create new phpexcel page
-	$objPHPExcel = new PHPExcel;
+	$objPHPExcel = new Spreadsheet();
 	$objPHPExcel->getDefaultStyle()->getFont()->setName('Lucida Fax');
 	//set font
 	$objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
@@ -62,7 +68,7 @@
 		$late_file_eom_all = OTKSR::getInstance() -> getEom_late_file($empno, $dateFrom, $dateTo);
 		// $late_file_eom_all = OTKSR::getInstance()->getEom_late_file('4326', $dateFrom, $dateTo);
 
-		if($late_file_eom_all === 0){
+		if(!($late_file_eom_all instanceof mysqli_result)){
 			//do nothing
 	
 		} else {
@@ -72,9 +78,9 @@
 				
 				$C_DATE = date('m/d/Y', strtotime($row['date']));
 				$objPHPExcel->getActiveSheet()
-				->setCellValueExplicit('A'.$count_tfm,$C_DATE,PHPExcel_Cell_DataType::TYPE_STRING);
+				->setCellValueExplicit('A'.$count_tfm,$C_DATE,DataType::TYPE_STRING);
 				$objPHPExcel->getActiveSheet()
-				->setCellValueExplicit('B'.$count_tfm, '0'.$empno,PHPExcel_Cell_DataType::TYPE_STRING);
+				->setCellValueExplicit('B'.$count_tfm, '0'.$empno,DataType::TYPE_STRING);
 				$objSheet->getCell('C'.$count_tfm)->setValue($SalaryType); 
 				$leavecode = OTKSR::getInstance()->leavecode_convertion($row['leavecode']);
 				$objSheet->getCell('D'.$count_tfm)->setValue($leavecode); 
@@ -106,7 +112,7 @@
 
 		}
 		$late_file_ot_all = OTKSR::getInstance() -> getEom_late_file_ot($empno, $dateFrom, $dateTo);
-		if($late_file_ot_all != 0 || $late_file_ot_all != "0"){			
+		if(is_array($late_file_ot_all)){			
 			for( $x=0; $x<count($late_file_ot_all['empno']); $x++ ){
 				$ot1 	= 0;
 				$ot2 	= 0;
@@ -166,9 +172,9 @@
 				
 				$C_DATE = date('m/d/Y', strtotime($late_file_ot_all['ot_date'][$x]));
 				$objPHPExcel->getActiveSheet()
-				->setCellValueExplicit('A'.$count_tfm,$C_DATE,PHPExcel_Cell_DataType::TYPE_STRING);
+				->setCellValueExplicit('A'.$count_tfm,$C_DATE,DataType::TYPE_STRING);
 				$objPHPExcel->getActiveSheet()
-				->setCellValueExplicit('B'.$count_tfm, '0'.$empno,PHPExcel_Cell_DataType::TYPE_STRING);
+				->setCellValueExplicit('B'.$count_tfm, '0'.$empno,DataType::TYPE_STRING);
 				$objSheet->getCell('C'.$count_tfm)->setValue($SalaryType); 
 				$objSheet->getCell('D'.$count_tfm)->setValue(''); 
 				$objSheet->getCell('E'.$count_tfm)->setValue(''); 
@@ -202,9 +208,9 @@
 	while( $row = mysqli_fetch_array($result) ){
 		$C_DATE = date('m/d/Y', strtotime($row['C_DATE']));
 		$objPHPExcel->getActiveSheet()
-		->setCellValueExplicit('A'.$count_tfm,$C_DATE,PHPExcel_Cell_DataType::TYPE_STRING);
+		->setCellValueExplicit('A'.$count_tfm,$C_DATE,DataType::TYPE_STRING);
 		$objPHPExcel->getActiveSheet()
-		->setCellValueExplicit('B'.$count_tfm, '0'.$row['IDNUM'],PHPExcel_Cell_DataType::TYPE_STRING);
+		->setCellValueExplicit('B'.$count_tfm, '0'.$row['IDNUM'],DataType::TYPE_STRING);
 		$objSheet->getCell('C'.$count_tfm)->setValue($row['EMP_CODE']); 
 		$objSheet->getCell('D'.$count_tfm)->setValue($row['T_IN']); 
 		$objSheet->getCell('E'.$count_tfm)->setValue($row['T_OUT']); 
@@ -269,12 +275,12 @@
 		$objSheet->getStyle('M2:Y'.($count_tfm-1) )->getNumberFormat()->setFormatCode('#,##0.00');
 	// }
 	unset($styleArray);
-	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	while (ob_get_level() > 0) { ob_end_clean(); }
+	header('Content-Type: application/vnd.ms-excel');
 	// header('Content-Disposition: attachment;filename=EOM'.$dateTodayName.'.xlsx');
 	header('Content-Disposition: attachment;filename=TFM'.$dateTodayName.'.xls'); // used for excel 2003 format
 	header('Cache-Control: max-age=0');
 	
-	// $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-	$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5'); // used for excel 2003 format
+	$objWriter = new Xls($objPHPExcel); // used for excel 2003 format
 	$objWriter->save('php://output');
 ?>
